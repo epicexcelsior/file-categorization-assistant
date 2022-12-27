@@ -1,11 +1,11 @@
 # File Categorization Assistant
+# Created by EpicExcelsior on December 26, 2022
 
 # Description: Loops through a directory of media files, opens each file individually,
 # and prompts the user to categorize the file. File is copied to different folders depending
 # on user input
 
-# Prerequisites: VLC is a fairly robust program for opening a variety of media files. It's
-# easiest to set the default program for various file types to VLC
+# Prerequisites: It's easiest to set the default program for various file types to VLC
 # Windows Settings -> Apps -> Default apps -> Change all relevant types to VLC (can be reverted later)
 
 import os
@@ -20,6 +20,7 @@ sfw = r"C:\Users\epice\Downloads\Memes\SFW"
 meme2 = r"C:\Users\epice\Downloads\Memes\Meme2"
 saturday = r"C:\Users\epice\Downloads\Memes\Saturday"
 
+# Define valid options
 optionDict = {
     'a': "SFW",
     'b': "neutral",
@@ -48,9 +49,10 @@ for (subdir,dirs,files) in os.walk(sourceDir):
         except:
             print(f"File {f} failed to open")
 
-        # Get user input (and force valid input)
+        # Get user input (forces valid input)
         choice = input("Enter category: ").lower()
-        while choice not in optionDict.keys():
+        print(list(optionDict.keys()))
+        while choice not in (list(optionDict.keys()) + ['q']):
             print("Invalid category option. Please try again.")
             choice = input("Enter category: ").lower()
 

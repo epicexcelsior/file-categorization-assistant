@@ -37,8 +37,10 @@ except:
 delete = r"C:\Users\epice\Downloads\Memes\Delete"
 
 # Print list of valid options
+print("Welcome to the file categorizer.\nValid options:")
 for key in optionDict.keys():
     print(key, '=', optionDict[key])
+print("\n")
 
 for (subdir,dirs,files) in os.walk(sourceDir):
     for f in files:
@@ -51,7 +53,6 @@ for (subdir,dirs,files) in os.walk(sourceDir):
 
         # Get user input (forces valid input)
         choice = input("Enter category: ").lower()
-        print(list(optionDict.keys()))
         while choice not in (list(optionDict.keys()) + ['q']):
             print("Invalid category option. Please try again.")
             choice = input("Enter category: ").lower()

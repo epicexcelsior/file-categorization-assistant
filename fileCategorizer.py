@@ -1,108 +1,127 @@
-# File Categorization Assistant
+# FILE CATEGORIZATION ASSISTANT
 # Created by EpicExcelsior on December 26, 2022
 
 # Description: Loops through a directory of media files, opens each file individually,
 # and prompts the user to categorize the file. File is copied to different folders depending
 # on user input
 
-# Prerequisites: It's easiest to set the default program for various file types to VLC
-# Windows Settings -> Apps -> Default apps -> Change all relevant types to VLC (can be reverted later)
+# Prerequisites: Edit the variables below, then edit the fileOperations function as needed.
+
+###################################################
+# Path to folder to be categorized
+sourceFolder = r"C:\Users\epice\Downloads\emojis"
+
+# Path to VLC executable
+vlcPath = r"C:\Program Files\VideoLAN\VLC\vlc.exe"
+
+# Define paths to destination folders
+folderOne = r"C:\PATH\TO\FOLDER"
+folderTwo = r"C:\PATH\TO\FOLDER"
+folderThree = r"C:\PATH\TO\FOLDER"
+
+# Any folders in this list will be created if they don't already exist
+destDirPaths = [folderOne, folderTwo, folderThree]
+
+
+# Define valid options
+validOptions = {
+    '1': "Copy to folder 1",
+    '2': "Copy to folder 1 and 2",
+    '3': "Copy to folder 2",
+    '4': "Copy to folder 3",
+    '5': "Delete"
+}
+###################################################
 
 import os
 import subprocess
 from shutil import copy2, rmtree
 
-# Define path of source directory
-sourceDir = r"C:\Users\epice\Downloads\fake downloads"
+###################################################
+# Define automated file operations (copying, deleting)
+# Edit as needed
+def fileOperations(path, choice):
+    if choice == '1':
+        copy2(path, sfw)
+        print(f'{f} copied to 1.')
+    elif choice == '2':
+        copy2(path, sfw)
+        copy2(path, meme2)
+        print(f'{f} copied to 1 and 2.')
+    elif choice == '3':
+        copy2(path, meme2)
+        print(f'{f} copied to 2.')
+    elif choice == '4':
+        copy2(path, saturday)
+        print(f'{f} copied to 3.')
+    elif choice == '5':
+        copy2(path, delete)
+        print(f'{f} copied to deleted folder.')
+###################################################
 
-# Define paths to destination directories
-sfw = r"C:\Users\epice\Downloads\Memes\SFW"
-meme2 = r"C:\Users\epice\Downloads\Memes\Meme2"
-saturday = r"C:\Users\epice\Downloads\Memes\Saturday"
 
-# Define valid options
-optionDict = {
-    'a': "SFW",
-    'b': "neutral",
-    'c': "sensitive",
-    'd': "cursed Saturday",
-    'e': "delete"
-}
+# Create destination folders if they don't already exist
+def createFolders():
+    # Check if folders exist. Add missing folders to dict to be added later.
+    for path in destDirPaths:
+        if not os.path.isdir(path):
+            os.mkdir(path)
 
-# Create directory to store deleted files
-try:
-    os.mkdir(r"C:\Users\epice\Downloads\Memes\Delete")
-except:
-    print("Deleted folder already created.")
-delete = r"C:\Users\epice\Downloads\Memes\Delete"
 
+# Accept user input within pre-defined options
+# Args: prompt (str) and iterable (list)
+def inputValidation(prompt, iterable):
+    choice = input(prompt).lower()
+
+    while choice not in iterable:
+        print("Invalid option. Please try again.")
+        choice = input(prompt).lower()
+
+    return choice
+
+
+createFolders()
 # Print list of valid options
 print("Welcome to the file categorizer.\nValid options:")
-for key in optionDict.keys():
-    print(key, '=', optionDict[key])
+for key in validOptions.keys():
+    print(key, '-', validOptions[key])
 print("\n")
 
 
-def fileOperations(file_path):
-    if choice == 'q':
-        print("Program terminated.")
-        return
-    elif choice == 'a':
-        copy2(file_path, sfw)
-        print(f'{f} copied to sfw.')
-    elif choice == 'b':
-        copy2(file_path, sfw)
-        copy2(file_path, meme2)
-        print(f'{f} copied to sfw and meme2.')
-    elif choice == 'c':
-        copy2(file_path, meme2)
-        print(f'{f} copied to meme2.')
-    elif choice == 'd':
-        copy2(file_path, saturday)
-        print(f'{f} copied to saturday.')
-    elif choice == 'e':
-        copy2(file_path, delete)
-        print(f'{f} deleted.')
+# "Walk" through all files in folder & subfolders
+for (subdir, dirs, files) in os.walk(sourceFolder):
+    for f in files:
+        filePath = os.path.join(subdir, f) # Joins path of current subdirectory with current file
+        try:
+            p = subprocess.run([vlcPath, filePath]) # Open file using VLC executable
+        except:
+            print(f"Failed to open '{f}'")
+
+        # Get user input (forces valid input)
+        operation = inputValidation("Enter category: ", list(validOptions.keys()) + ['q'])
+
+        # Exit loop upon user input
+        if operation == 'q': break
+
+        # Perform operations according to user input
+        fileOperations(filePath, operation)
+
+
+# Close VLC
+try:
+    subprocess.run([vlcPath, "vlc://quit"])
+    p.terminate()
+except:
+    print("Unable to close VLC.")
 
 
 # Confirms deletion of files in specified directory, then deletes all directory contents
-def deleteDir(deleteDir):
-    # Confirm deletion of deleted files. Forces valid user input.
-    deleteConf = ''
-    while deleteConf not in ['y', 'n']:
-        deleteConf = input('No more files. Delete files in "deleted" folder? (y/n): ').lower()
-
-    if deleteConf == 'y':
-        try:
-            rmtree(deleteDir) # Delete directory contents
-        except:
-            print("Failed to delete files.")
-
-
-for (subdir, dirs, files) in os.walk(sourceDir):
-    for f in files:
-        filePath = os.path.join(subdir, f) # Joins path of current subdirectory with current file
-        # process = Popen(["open", filePath], stdout=PIPE, stderr=PIPE)
-        try:
-            os.startfile(filePath) # Opens default program for file's filetype
-        except:
-            print(f"File {f} failed to open")
-
-        # Get user input (forces valid input)
-        choice = input("Enter category: ").lower()
-        while choice not in (list(optionDict.keys()) + ['q']):
-            print("Invalid category option. Please try again.")
-            choice = input("Enter category: ").lower()
-
-        # Perform operations according to user input
-        fileOperations(filePath)
-
-    # Kills VLC
+deleteConf = inputValidation('No more files. Delete files in "deleted" folder? (y/n): ', ['y', 'n'])
+if deleteConf == 'y':
     try:
-        os.system('taskkill /F /IM vlc.exe')
+        rmtree(deleteDir)
     except:
-        print("Unable to terminate VLC.")
+        print("Failed to delete files.")
 
-    deleteDir(delete)
 
-    print("Program is finished.")
+print("Program is finished.")

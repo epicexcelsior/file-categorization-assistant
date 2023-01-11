@@ -1,11 +1,12 @@
-# FILE CATEGORIZATION ASSISTANT
+# MEDIA FILE CATEGORIZATION ASSISTANT
 # Created by EpicExcelsior on December 26, 2022
 
 # Description: Loops through a directory of media files, opens each file individually,
 # and prompts the user to categorize the file. File is copied to different folders depending
 # on user input
 
-# Prerequisites: Edit the variables below, then edit the fileOperations function as needed.
+# Prerequisites: VLC (https://www.videolan.org/vlc/) must be installed.
+# Edit the path variables below, then edit the fileOperations function as needed.
 
 ###################################################
 # Path to folder to be categorized
@@ -18,9 +19,10 @@ vlcPath = r"C:\Program Files\VideoLAN\VLC\vlc.exe"
 folderOne = r"C:\PATH\TO\FOLDER"
 folderTwo = r"C:\PATH\TO\FOLDER"
 folderThree = r"C:\PATH\TO\FOLDER"
+delete = r"C:\PATH\TO\DELETE\FOLDER"
 
 # Any folders in this list will be created if they don't already exist
-destDirPaths = [folderOne, folderTwo, folderThree]
+destDirPaths = [folderOne, folderTwo, folderThree, delete]
 
 
 # Define valid options
@@ -81,10 +83,10 @@ def inputValidation(prompt, iterable):
 
 
 # Checks if a file's extension is included in a provided list
-def extensionInList(filepath, iterable):
+def extensionInList(filepath, extList):
     _, extension = os.path.splitext(filepath)
     extension = extension[1:]  # remove the first . from the extension
-    return extension in iterable # True if it's in the list, false if not
+    return extension in extList # True if it's in the list, false if not
 
 
 vlcFormats = ['mp4', 'webm', 'jpeg', 'jpg', 'png', '3g2', '3gp', '3gp2', '3gpp', 'amv',
@@ -103,12 +105,11 @@ for key in validOptions.keys():
     print(key, '-', validOptions[key])
 print("Q - quit\n")
 
-
+running = True # Flag to stop program early upon user input
 browserFiles = [] # Paths to files that can't be opened with VLC (to be opened later in a web browser)
 
 # PHASE 1 - Open files using VLC
-# "Walk" through all files in folder & subfolders
-for (subdir, dirs, files) in os.walk(sourceFolder):
+for (subdir, dirs, files) in os.walk(sourceFolder): # Recursively "walks" through all files in folder & subfolders
     for f in files:
         filePath = os.path.join(subdir, f) # Joins path of current subdirectory with current file
         
@@ -127,14 +128,15 @@ for (subdir, dirs, files) in os.walk(sourceFolder):
             operation = inputValidation("Enter category: ", list(validOptions.keys()) + ['q'])
 
             # Exit loop upon user input
-            if operation == 'q': break
+            if operation == 'q':
+                running = False
+                break
 
             # Perform operations according to user input
             fileOperations(filePath, operation)
         else:
             browserFiles.append(filePath)
-            print(f'{filePath} can\'t be opened by VLC. It will be opened by the default program at the end.')
-            continue
+            print(f'{filePath} can\'t be opened by VLC. Will attempt to open later.')
 
 
 # Close VLC
@@ -145,52 +147,63 @@ except:
     print("Unable to close VLC.")
 
 
-laterFiles = [] # Paths to files that can't be opened with a browser (to be opened later with default program)
 # PHASE 2 - Open files using HTML & web browser
-print('\nNow viewing files that could not be opened by VLC.\n')
-for f in browserFiles:
-    if extensionInList(f, browserFormats):
+if running:
+    laterFiles = [] # Paths to files that can't be opened with a browser (to be opened later with default program)
+    print('\nNow viewing files that could not be opened by VLC.\n')
+    for f in browserFiles:
+        if extensionInList(f, browserFormats):
+            try:
+                open(f"{f}.html", "w").write(f"<html><body><img src='{f}'></body></html>")
+                webbrowser.open_new_tab(f"{f}.html")
+            except:
+                print(f"Failed to open '{f}'")
+                laterFiles.append(f)
+                continue
+
+            operation = inputValidation("Enter category: ", list(validOptions.keys()) + ['q'])
+
+            if operation == 'q':
+                running = False
+                try:
+                    os.remove(f'{f}.html')
+                except OSError():
+                    print(f'Failed to delte {f}.')
+                break
+
+            fileOperations(f, operation)
+            try:
+                os.remove(f'{f}.html')
+            except OSError():
+                print(f'Failed to delete {f}.')
+        else:
+            laterFiles.append(f)
+            print(f'{f} can\'t be opened by the browser. Will attempt to open later.')
+
+
+# PHASE 3 - Open files using default program
+if running:
+    print('\nNow viewing files that could not be opened by VLC or browser.\n')
+    for filePath in laterFiles:
         try:
-            open(f"{f}.html", "w").write(f"<html><body><img src='{f}'></body></html>")
-            webbrowser.open_new_tab(f"{f}.html")
+            # Open file using default program
+            os.startfile(filePath)
         except:
-            print(f"Failed to open '{f}'")
+            print(f"Failed to open '{filePath}'")
             continue
 
         operation = inputValidation("Enter category: ", list(validOptions.keys()) + ['q'])
 
-        if operation == 'q':
-            os.remove(f'{f}.html')
-            break
+        if operation == 'q': break
 
-        fileOperations(f, operation)
-        os.remove(f'{f}.html')
-    else:
-        laterFiles.append(f)
-
-
-# PHASE 3 - Open files using default program
-print('\nNow viewing files that could not be opened by VLC or browser.\n')
-for filePath in laterFiles:
-    try:
-        # Open file using default program
-        os.startfile(filePath)
-    except:
-        print(f"Failed to open '{filePath}'")
-        continue
-
-    operation = inputValidation("Enter category: ", list(validOptions.keys()) + ['q'])
-
-    if operation == 'q': break
-
-    fileOperations(filePath, operation)
+        fileOperations(filePath, operation)
 
 
 # Confirms deletion of files in specified directory, then deletes all directory contents
 deleteConf = inputValidation('No more files. Delete files in "deleted" folder? (y/n): ', ['y', 'n'])
 if deleteConf == 'y':
     try:
-        rmtree(deleteDir)
+        rmtree(delete)
     except:
         print("Failed to delete files.")
 

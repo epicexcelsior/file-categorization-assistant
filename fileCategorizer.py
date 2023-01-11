@@ -87,12 +87,12 @@ def extensionInList(filepath, iterable):
     return extension in iterable # True if it's in the list, false if not
 
 
-vlcFormats = ['mp4', 'webm', 'jpeg', 'jpg', 'png', '3g2', '3gp', '3gp2', '3gpp', 'amv', 'asf', 'avi', 'bik', 'flv', 'gxf', 'm1v',
-'m2v', 'm2t', 'm2ts', 'm4v', 'mkv', 'moov', 'mov', 'mpeg', 'mpeg1', 'mpeg2', 'mpeg4',
-'mpg', 'mpv', 'mt2s', 'mts', 'mxf', 'nsv', 'ogm', 'ogv', 'qt', 'rm', 'rmvb', 'swf', 'ts', 'vob',
-'wmv', '3ga', 'aac', 'ac3', 'aif', 'aiff', 'amr', 'ape', 'au', 'flac', 'm4a', 'm4b', 'm4p',
-'mid', 'midi', 'mka', 'mp3', 'mpa', 'ogg', 'ra', 'wav', 'weba', 'bmp', 'ico', 'tiff',
-'mms', 'rtp', 'rtsp', 'sdp']
+vlcFormats = ['mp4', 'webm', 'jpeg', 'jpg', 'png', '3g2', '3gp', '3gp2', '3gpp', 'amv',
+'asf', 'avi', 'bik', 'flv', 'gxf', 'm1v', 'm2v', 'm2t', 'm2ts', 'm4v', 'mkv', 'moov', 'mov',
+'mpeg', 'mpeg1', 'mpeg2', 'mpeg4', 'mpg', 'mpv', 'mt2s', 'mts', 'mxf', 'nsv', 'ogm', 'ogv',
+'qt', 'rm', 'rmvb', 'swf', 'ts', 'vob', 'wmv', '3ga', 'aac', 'ac3', 'aif', 'aiff', 'amr', 'ape',
+'au', 'flac', 'm4a', 'm4b', 'm4p', 'mid', 'midi', 'mka', 'mp3', 'mpa', 'ogg', 'ra', 'wav', 'weba',
+'bmp', 'ico', 'tiff', 'mms', 'rtp', 'rtsp', 'sdp']
 browserFormats = ['gif', 'webp', 'apng']
 
 
